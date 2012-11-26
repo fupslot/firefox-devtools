@@ -1,0 +1,1 @@
+lock_pref("extension.experimental.value", "locked");

@@ -1,0 +1,5 @@
+content	devtools	chrome/content/
+skin	devtools	classic/1.0	chrome/skin/
+locale	devtools	en-US	chrome/locale/en-US/
+
+overlay	chrome://browser/content/browser.xul	chrome://devtools/content/browserOverlay.xul

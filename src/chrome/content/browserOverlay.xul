@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<?xml-stylesheet type="text/css" href="chrome://global/skin/"  ?>
+<?xml-stylesheet type="text/css"  href="chrome://devtools/skin/browserOverlay.css"  ?>
+
+<overlay id="browserOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	<script type="text/javascript" src="chrome://devtools/content/browserOverlay.js"/>
+	
+	<deck id="tab-view-deck">
+		<box id="mybox" insertafter="browser-panel" style="position: absolute" flex="1"></box>
+	</deck>
+	
+	<toolbar id="nav-bar">
+		<toolbarbutton id="browser-restart-button" 
+			class="toolbarbutton-1 chromeclass-toolbar-additional" 
+			persist="class" 
+			label="Restart" 
+			onclick="restartFireFox();"
+			insertafter="bookmarks-menu-button-container">
+		</toolbarbutton>
+	</toolbar>
+	
+	<keyset>
+		<key id="key-devtools-restart" modifiers="control shift" key="R" oncommand="restartFireFox()" />
+	</keyset>
+
+</overlay>

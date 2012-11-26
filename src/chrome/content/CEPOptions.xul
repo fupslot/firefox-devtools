@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<!DOCTYPE window SYSTEM "chrome://chromedit/locale/CEPOptions.dtd">
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<dialog id="pref-chromedit"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         title="&opswindow.title;"
+         onload="getThePrefs();"
+         buttons="accept,cancel"
+         ondialogaccept="styleTheFiles();">
+
+<script type="application/x-javascript" src="chrome://chromedit/content/chromedit.js" />
+<script type="application/x-javascript" src="chrome://chromedit/content/ManagePrefs.js"/>
+
+<script type="application/x-javascript"><![CDATA[
+
+		var Prefs = new ChromEditPlus_PrefManager();
+		function getPref(strID) { return Prefs.getPref(strID); }
+		function setPref(strID, varValue) { Prefs.setPref(strID, varValue); }
+		function getElement(strID) { return document.getElementById(strID); }
+		
+		function getThePrefs() {
+                        var lastOpsTab = getPref("chromedit.lastopstabopen", 1);
+                        document.getElementById("ops").selectedIndex = lastOpsTab - 1;
+                        var dothetab = getPref("chromedit.openintab");
+                        document.getElementById('cepintab').checked = dothetab;
+                        var hideuseless = getPref("chromedit.hideprefstab");
+                        document.getElementById('noprefs').checked = hideuseless;
+                        var showhidetools = getPref("chromedit.hidetoolsmenu");
+                        document.getElementById('showhide').checked = showhidetools;
+                        var autosave = getPref("chromedit.saveifchanged");
+                        document.getElementById('autosve').checked = autosave;
+			getElement("stylebox").value = getPref("chromedit.styles");
+                        hidetabbox();
+		}
+
+                function hidetabbox() {
+                  if(navigator.userAgent.search(/Thunderbird/gi) >= 0) {
+                  document.getElementById('chromeditintab').hidden = true;
+                 }
+                }
+
+                function styleTheFiles() {
+                   var setPrefStyle = Components.classes["@mozilla.org/preferences-service;1"].
+                   getService(Components.interfaces.nsIPrefBranch);
+		   setPrefStyle.setCharPref("chromedit.styles", getElement("stylebox").value);
+                   document.getElementById('stylethefiles').setAttribute("disabled", "true");
+                }
+
+		function restoreDefault(strElement) {
+			var strDefault = "";
+			try {
+				var hDefaultBranch = Prefs.getService().getDefaultBranch("chromedit.");
+				switch (strElement) {
+					case "stylebox": strDefault = hDefaultBranch.getCharPref("styles"); break;
+				}
+			} catch(ex) { dump(ex + "\n"); }
+			getElement(strElement).value = strDefault;
+		}
+
+                function updateDoTheTab(pref) {
+                        if ( document.getElementById(pref).checked == true )
+                {
+                        setPref("chromedit.openintab", true);
+                } else {
+                        setPref("chromedit.openintab", false);
+                 }
+                }
+
+                function updateHideThePrefsTab(pref) {
+                        if ( document.getElementById(pref).checked == true )
+                {
+                        setPref("chromedit.hideprefstab", true);
+                } else {
+                        setPref("chromedit.hideprefstab", false);
+                 }
+                }
+
+                function updateHideTheToolsMenu(pref)
+                {
+                        if ( document.getElementById(pref).checked == true )
+                {
+                        setPref("chromedit.hidetoolsmenu", true);
+                } else {
+                        setPref("chromedit.hidetoolsmenu", false);
+                 }
+                }
+
+                function updateAutoSaveFiles(pref) {
+                        if ( document.getElementById(pref).checked == true )
+                {
+                        setPref("chromedit.saveifchanged", true);
+                } else {
+                        setPref("chromedit.saveifchanged", false);
+                 }
+                }
+
+                function lastOpsTabOpen(n) {
+			setPref("chromedit.lastopstabopen", value=n);
+                }
+	
+]]></script>
+
+<tabbox id="ops" flex="1">
+  <tabs orient="horizontal">
+    <tab id="gen" label="&tabgen.label;" oncommand="lastOpsTabOpen(1);" />
+    <tab id="cfiles" label="&custnote.label;" oncommand="lastOpsTabOpen(2);" />
+  </tabs>
+  <tabpanels id="optionpanels" flex="1">
+
+<vbox flex="1" id="gen">
+<groupbox flex="1">
+    <hbox flex="1" pack="center" id="chromeditintab" align="left">
+          <checkbox id="cepintab" label="&cepinatab.label;"
+               oncommand="updateDoTheTab('cepintab');" />
+    </hbox>
+    <hbox flex="1" pack="center" align="left">
+          <checkbox id="showhide" label="&hidetools.label;"
+               oncommand="updateHideTheToolsMenu('showhide');"/>
+    </hbox>
+    <hbox flex="1" pack="center" align="left">
+          <checkbox id="autosve" label="&autosave.label;"
+               oncommand="updateAutoSaveFiles('autosve');" />
+    </hbox>
+    <hbox flex="1" pack="center" align="left">
+          <checkbox id="noprefs" label="&hideprefstab.label;"
+               oncommand="updateHideThePrefsTab('noprefs');" />
+    </hbox>
+</groupbox>
+<groupbox flex="1">
+<hbox flex="1" pack="center" align="center">
+<button id="ocfolder" label="&opchrfolderBtn.label;" onclick="window.close();" oncommand="cepFolders.openSpecialFolder('UChrm');" />
+</hbox>
+</groupbox>
+</vbox>
+
+<vbox flex="1" id="cfiles">
+<groupbox flex="1">
+<caption label="&capstyle.label;" />
+<vbox flex="1">
+<textbox id="stylebox" oninput="document.getElementById('stylethefiles').removeAttribute('disabled');" multiline="true" rows="7" cols="18"/>
+</vbox>
+</groupbox>
+<groupbox flex="1">
+<hbox flex="1" pack="center" align="center">
+<button id="stylethefiles" disabled="true" label="&butstyle.label;" oncommand="styleTheFiles();" />
+</hbox>
+</groupbox>
+<groupbox flex="1">
+<hbox flex="1" pack="center" align="center">
+<button id="restorestyles" label="&restorestyles.label;" oncommand="restoreDefault('stylebox')" onclick="document.getElementById('stylethefiles').removeAttribute('disabled');" />
+</hbox>
+</groupbox>
+</vbox>
+
+  </tabpanels>
+</tabbox>
+
+</dialog>

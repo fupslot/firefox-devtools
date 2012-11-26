@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE window SYSTEM "chrome://chromedit/locale/chromedit.dtd">
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://chromedit/skin/chromedit.css" type="text/css"?>
+
+<window xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        title="&window.title;"
+        windowtype="chromedit:mainwindow"
+        width="640" height="480"
+        persist="screenX screenY width height sizemode"
+        onunload="saveIfChanged();"
+        onload="startUp();"
+        id="chromeditplus">
+
+<script type="application/x-javascript" src="chrome://chromedit/content/chromedit.js" />
+<script type="application/x-javascript" src="chrome://chromedit/content/ManagePrefs.js"/>
+<script type="application/x-javascript" src="chrome://chromedit/content/UpdatePrefs.js"/>
+<script type="application/x-javascript"><![CDATA[
+var Prefs = new ChromEditPlus_PrefManager();
+function getPref(strID) { return Prefs.getPref(strID); }
+function setPref(strID, varValue) { Prefs.setPref(strID, varValue); }
+function getElement(strID) { return document.getElementById(strID); }
+
+function lastTabOpen(n) {
+ setPref("chromedit.lasttabopen", value=n);
+}
+]]></script>
+
+<menupopup id="CEPOptions">
+        <menuitem
+           id="cepops"
+           label="&opOptions.label;"
+           oncommand="openCEPOptions();" />
+</menupopup>
+
+<tabbox id="tabbox" flex="1" context="CEPOptions">
+  <tabs orient="horizontal">
+    <tab id="ChromeTab"  oncommand="lastTabOpen(1);" label="&tab.chrome.label;" collapsed="false" />
+    <tab id="ContentTab" oncommand="lastTabOpen(2);" label="&tab.content.label;" collapsed="false" />
+    <tab id="jsTab" oncommand="lastTabOpen(3);" label="&tab.js.label;" collapsed="false" />
+    <tab id="prefTab" oncommand="lastTabOpen(4);" label="&tab.prefs.label;" collapsed="true" />
+  </tabs>
+  <tabpanels id="tabpanels" flex="1">
+
+      <tabpanel orient="vertical" id="ChromeTab">
+        <hbox flex="1" style="border:2px solid red;">
+          <textbox id="editChrome" flex="1" multiline="true" value="" cols="150" wrap="false"
+                   oninput="document.getElementById('save-chrome').removeAttribute('disabled');"
+                   style="white-space: nowrap;"/>
+        </hbox>
+        <hbox align="center">
+          <button id="save-chrome" disabled="true" value="save" label="&saveBtn.label;"
+                oncommand="saveIt('userChrome.css','editChrome', 'save-chrome')" />
+          <button id="restart" label="&restart.label;" oncommand="restartFireFox();" /> 
+        </hbox>
+      </tabpanel>
+
+      <tabpanel orient="vertical" id="ContentTab">
+        <hbox flex="1" style="border:2px solid green;">
+          <textbox id="editContent" flex="1" multiline="true" value="" cols="150" wrap="false"
+                oninput="document.getElementById('save-content').removeAttribute('disabled');"
+                style="white-space: nowrap;"/>
+        </hbox>
+        <hbox align="center">
+          <button id="save-content" disabled="true" class="" label="&saveBtn.label;" value="save"
+                oncommand="saveIt('userContent.css','editContent', 'save-content')" />
+          <button id="restart" label="&restart.label;" oncommand="restartFireFox();" />
+        </hbox>
+      </tabpanel>
+
+      <tabpanel orient="vertical" id="jsTab">
+        <hbox flex="1" style="border:2px solid blue;">
+          <textbox id="editJs" flex="1" multiline="true" value="" cols="150" wrap="false"
+                oninput="document.getElementById('save-js').removeAttribute('disabled');"
+                style="white-space: nowrap;"/>
+        </hbox>
+        <hbox align="center">
+          <button id="save-js" disabled="true" class="" value="save" label="&saveBtn.label;"
+                oncommand="saveIt('user.js','editJs', 'save-js')" />
+          <button id="restart" label="&restart.label;" oncommand="restartFireFox();" />
+        </hbox>
+      </tabpanel>
+
+      <tabpanel orient="vertical" id="prefTab">
+        <hbox flex="1" style="border:2px dotted blue;">
+          <textbox id="editprefs" flex="1" multiline="true" value="" cols="150" wrap="false"
+                readonly="true" style="white-space: nowrap;"/>
+        </hbox>
+      </tabpanel>
+
+  </tabpanels>
+</tabbox>
+
+</window>
