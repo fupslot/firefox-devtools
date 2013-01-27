@@ -21,44 +21,13 @@ const nsIAppStartup = Components.interfaces.nsIAppStartup;
 };
 
 
-var addonInstallListener = {
-	onNewInstall: function(aAddon) { Cu.reportError(aAddon.name); },
-	onDownloadStarted: function(aAddon) { Cu.reportError(aAddon.name); },
-	onDownloadProgress: function(aAddon) { Cu.reportError(aAddon.name); },
-	onDownloadEnded: function(aAddon) { Cu.reportError(aAddon.name); },
-	onDownloadCancelled: function(aAddon) { Cu.reportError(aAddon.name); },
-	onDownloadFailed: function(aAddon) { Cu.reportError(aAddon.name); },
-	onInstallStarted: function(aAddon) { Cu.reportError(aAddon.name); },
-	onInstallEnded: function(aAddonInstall, aAddon) { Cu.reportError(aAddon.name); },
-	onInstallCancelled: function(aAddon) { Cu.reportError(aAddon.name); },
-	onInstallFailed: function(aAddon) { Cu.reportError(aAddon.name); },
-	onExternalInstall: function(aAddonInstall, aAddon, aNeedRestart) {}
-};
+// writes a selected profile name on a top orange button
+(function(){
+	var profiles = Cc["@mozilla.org/toolkit/profile-service;1"]
+    .createInstance(Ci.nsIToolkitProfileService);
 
+	var profileName = profiles.selectedProfile.name;
 
-var addonListerner1 = {
-	onEnabling: function(aAddon, aNeedRestart) { Cu.reportError(aAddon.name); },
-	onEnabled: function(aAddon) { Cu.reportError(aAddon.name); },
-	onDisabling: function(aAddon, aNeedRestart) { Cu.reportError(aAddon.name); },
-	onDisabled: function(aAddon) { Cu.reportError(aAddon.name); },
-	onInstalling: function(aAddon, aNeedRestart) { 
-		Cu.reportError(aAddon.name); 
-	},
-	onInstalled: function(aAddon) {
-		// for boostrap only 
-		Cu.reportError(aAddon.name);
-	},
-	onUninstalling: function(aAddon, aNeedRestart) { Cu.reportError(aAddon.name); },
-	onUninstalled: function(aAddon) { Cu.reportError(aAddon.name); },
-	onOperationCancelled: function(aAddon) { Cu.reportError(aAddon.name); },
-	onPropertyChanged: function(aAddon, aProperties) { Cu.reportError(aAddon.name); }
-};
-
-window.addEventListener("load",   function(){ 
-	AddonManager.addAddonListener(addonListerner1);
-	AddonManager.addInstallListener(addonInstallListener);
-}, false); 
-window.addEventListener("unload", function(){
-	AddonManager.removeAddonListener(addonListerner1); 
-	AddonManager.removeInstallListener(addonInstallListener);
-}, false);
+	var appButton = document.getElementById("appmenu-button");
+	appButton.setAttribute("label", "FireFox [" + profileName+"]");
+})();
