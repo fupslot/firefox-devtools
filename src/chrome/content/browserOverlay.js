@@ -20,6 +20,21 @@ const nsIAppStartup = Components.interfaces.nsIAppStartup;
             .quit(nsIAppStartup.eRestart | nsIAppStartup.eAttemptQuit);	
 };
 
+function inspect () {
+  var doc = top.window.content.document;
+  var script = doc.createElement("script");
+  script.type = "text/javascript";
+  script.setAttribute("src", "chrome://devtools/content/inspector/main.js");
+
+  var head = doc.getElementsByTagName("head")[0];
+  if ( head ) {
+    head.appendChild(script);
+  }
+  else {
+    doc.appendChild(script);
+  }
+};
+
 
 // writes a selected profile name on a top orange button
 (function(){
