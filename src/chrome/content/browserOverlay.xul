@@ -16,7 +16,7 @@
 
 		<toolbarbutton id="browser-restart-button" class="toolbarbutton-1 chromeclass-toolbar-additional" persist="class" label="Restart" onclick="restartFireFox();"/>
 
-		<toolbarbutton id="pick-element-button" class="toolbarbutton-1 chromeclass-toolbar-additional" persist="class" label="Pick element" tooltiptext="Pick Element"  onclick="inspect();"/>
+		<toolbarbutton id="pick-element-button" class="toolbarbutton-1 chromeclass-toolbar-additional" persist="class" label="Pick element" tooltiptext="Pick Element"  onclick="embedScripts();"/>
 
 	</toolbarpalette>
 
