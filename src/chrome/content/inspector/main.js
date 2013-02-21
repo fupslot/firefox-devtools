@@ -1,5 +1,49 @@
 (function () {
+	window.previewObject = null;
+	var copyBorder = {"width": "", "style": "", "color": ""};
 
+	function highlightBorder (el) {
+		copyBorder.width = el.style.borderWidth;
+		copyBorder.style = el.style.borderStyle;
+		copyBorder.color = el.style.borderColor;
+
+	  el.style.borderWidth = "2px";
+	  el.style.borderStyle = "solid";
+	  el.style.borderColor = "#f00";
+	}
+
+	function removeBorder (el) {
+	  el.style.borderWidth = copyBorder.width;
+	  el.style.borderStyle = copyBorder.style;
+	  el.style.borderColor = copyBorder.color;
+
+		copyBorder.width = "";
+		copyBorder.style = "";
+		copyBorder.color = "";
+	}
+
+	function PreviewObject() {
+		this.img = "";
+		this.title = document.title;
+		this.url =  parseUrl(document.URL).fullhostname;
+		this.size = null;
+		this.color = "transparent";
+		this.sprite = null;
+	}
+
+	function OnMessage (e) {
+		if ( e.data.action == "showScreenshot" ) {
+
+			previewObject = new PreviewObject();
+			previewObject.img = e.data.image.img;
+			previewObject.size = {
+				"width": e.data.image.size.width,
+				"height": e.data.image.size.height
+			};
+
+			doPreview (previewObject);
+		}
+	}
 			
 	function OnMouseOver(e) {
 	  el = e.target;   // not IE
@@ -7,13 +51,11 @@
 	  // not for preview box
 	  if ( el.id === "R2D2C3P0" ) { return; }
 	  // set the border around the element
-	  el.style.borderWidth = '2px';
-	  el.style.borderStyle = 'solid';
-	  el.style.borderColor = '#f00';
+		highlightBorder(el);
 	}
  
 	function OnMouseOut(e) {
-    e.target.style.borderStyle = 'none';
+    removeBorder(e.target);
 	}
 
 	function OnClick(e) {
@@ -22,6 +64,11 @@
 
 	  if ( isLeftClick(e) ) {
 	  	var el = e.target;
+	  	// takes a snapshot of selected element
+	  	if ( e.ctrlKey ) {
+	  		getScreenshot(el);
+	  		return;
+	  	}
 
 	  	// for image
 	  	if ( el.tagName === "IMG" ) {
@@ -32,8 +79,12 @@
 	  	}
 	  	else {
 	  		getBackground(el, function (bg) {
-	  			console.dir( bg );
-	  			doPreview( bg );
+		  		if ( bg.error ) {
+			  		getScreenshot( el );
+		  		}
+		  		else {
+		  			doPreview( bg );
+		  		}
 	  		});
 	  	}
 	  }
@@ -41,7 +92,7 @@
 	}
 
 	function getBackground (el, callback) {
-		var bg = { "img":"", "size":null, "color":"", "sprite":null };
+		previewObject = new PreviewObject();
 
 		window.query = {
 			"prop": "backgroundImage",
@@ -54,15 +105,15 @@
 
 		if ( url == "" ) {
 			if ( callback ) {
-				callback({"message": "No image or sprite found"});
+				callback({"error": "No image or sprite found"});
 			}
 			return;
 		}
 
-		bg.img = normalizeUrl(extractCssStyledUrl(url));
+		previewObject.img = normalizeUrl(extractCssStyledUrl(url));
 
 		// seek a background-color starting from 'query._el' element
-		bg.color = scanForProp(query._el, {
+		previewObject.color = scanForProp(query._el, {
 			"prop": "backgroundColor",
 			"onlyOneParent": false,
 			"except": ["transparent", "inherit", "none", ""],
@@ -83,7 +134,7 @@
 			var sprite = null;
 
 			// actuall image dimentions 
-			bg.size = {
+			previewObject.size = {
 				"width": this.width,
 				"height": this.height
 			};
@@ -120,22 +171,22 @@
 				}
 			}
 
-			bg.sprite = sprite;
+			previewObject.sprite = sprite;
 
 			if ( callback ) {
-				callback( bg );
+				callback( previewObject );
 			}
 		}
-		img.src = bg.img;
+		img.src = previewObject.img;
 	}
 
 	function getImage (el, callback) {
-		var image = { "img":"", "title":"", "color": "", "size":null };
+		previewObject = new PreviewObject();
 
-		image.img = normalizeUrl(el.getAttribute("src"));
-		image.title = el.getAttribute("title") || el.getAttribute("alt") || "";
+		previewObject.img = normalizeUrl(el.getAttribute("src"));
+		// previewObject.title = el.getAttribute("title") || el.getAttribute("alt") || "";
 
-		image.color = scanForProp(el, {
+		previewObject.color = scanForProp(el, {
 			"prop": "backgroundColor",
 			"onlyOneParent": true,
 			"except": ["transparent", "none", "inherit", ""],
@@ -149,15 +200,54 @@
 				size = { "width":this.width, "height":this.height };
 			}
 			
-			image.size = size;
+			previewObject.size = size;
 
 			if ( callback ) {
-				callback ( image );
+				callback ( previewObject );
 			}
 		};
 
-		img.src = image.img;
+		img.src = previewObject.img;
 	}
+
+	function getScreenshot (el) {
+		el.style.borderStyle = 'none';
+
+		var offset = getOffset(el);
+		
+		// if ( offset.top == 0 || offset.left == 0) { return; }
+		var style = window.getComputedStyle(el, null);
+
+		var coords = {
+			"x": Math.abs(offset.left - window.scrollX),
+			"y": Math.abs(offset.top - window.scrollY),
+			"width": parseInt(style.width) || null,
+			"height": parseInt(style.height) || null
+		};
+
+		if ( coords.width == null || coords.height == null ) { return; }
+		// send the coords of the area to extension for making a screenshot
+		window.postMessage({
+		"action":"takeScreenshot",
+			"rect":coords
+		}, "*");
+	}
+
+	function getOffset (el, offset) {
+
+		if ( ! el ) { return offset; }
+
+		if ( ! offset ) { 
+			var offset = {"top":el.offsetTop, "left":el.offsetLeft}; 
+		}
+		else {
+			offset.top  += el.offsetTop;
+			offset.left += el.offsetLeft;
+		}
+		// console.log(offset);	
+		return getOffset(el.offsetParent, offset);
+	}
+
 
 	// prop, except, onlyOneParent, default
 	function scanForProp(el, attrs) {
@@ -216,11 +306,31 @@
 				}
 
 				var el = document.getElementById("R2D2C3P0");
-				el.style.backgroundColor = o.color;
+				// el.style.backgroundColor = o.color;
 				empty(el).appendChild(canvas);
 			}
 		}
 		img.src = o.img;
+
+	}
+
+	window.sendData = function () {
+		if ( previewObject ) {
+			window.postMessage({
+				"action": "sendData",
+				"data": previewObject
+			}, "*");
+		}
+
+		// var canvas = document.querySelector("#R2D2C3P0 > canvas");
+		// if ( canvas == null )  { return; }
+
+		// var dataURL = canvas.toDataURL("image/png");
+		// var fr = new FileReader();
+		// fr.onloadend = function (e) {
+		// 	console("read!!!");
+		// }
+		// fr.readAsDataURL(dataURL);
 
 	}
 
@@ -320,6 +430,7 @@
 	document.addEventListener("mouseover", OnMouseOver, true);
 	document.addEventListener("mouseout", OnMouseOut, true);
 	document.addEventListener("click", OnClick, true);
+	window.addEventListener("message", OnMessage, true);
 
 	previewBox();
 })();

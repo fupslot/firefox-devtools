@@ -1,5 +1,7 @@
+
+
 function restartFireFox() {
-const nsIAppStartup = Components.interfaces.nsIAppStartup;
+	const nsIAppStartup = Components.interfaces.nsIAppStartup;
   var os = Components.classes["@mozilla.org/observer-service;1"]
                      .getService(Components.interfaces.nsIObserverService);
   var cancelQuit = Components.classes["@mozilla.org/supports-PRBool;1"]
@@ -54,13 +56,126 @@ function embedScripts () {
   });
   injectScript(doc, script);
   script = null;
+
+  top.window.content.addEventListener("message", OnMessage, false);
 };
+
+
+function OnMessage (e) {
+	if (e.data.action == "takeScreenshot") {
+		cropArea(e.data.rect);
+	}
+	
+	if (e.data.action == "sendData") {
+		sendData(e.data.data);
+	}
+}
+
+function cropArea (rect) {
+		// var HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
+		var win = gBrowser.contentWindow;
+		// var doc = Services.appShell.hiddenDOMWindow.document;
+
+		var canvas = createCanvas();
+		canvas.width = win.outerWidth;
+		canvas.height = win.outerHeight;
+
+		// Cu.reportError(JSON.stringify(rect));
+		// var canvas = top.window.content.createElement("canvas");
+		var ctx = canvas.getContext("2d");
+		ctx.drawWindow(win, 0, 0, win.outerWidth, win.outerHeight, "transparent");
+
+		// prevent border collisions
+		if (rect.x + rect.width > win.outerWidth) {rect.width = win.outerWidth - rect.x;}
+		if (rect.y + rect.height > win.outerHeight) {rect.height = win.outerHeight - rect.y;}
+
+		var imageData = ctx.getImageData(rect.x, rect.y, rect.width, rect.height);
+		ctx = null;
+
+		canvas.width = rect.width;
+		canvas.height = rect.height;
+		
+		var ctx = canvas.getContext("2d");
+		ctx.putImageData(imageData, 0, 0);
+		ctx = null;
+		// ctx.drawWindow(top.window.content, 0, 0, area.width, area.height, 0, 0, area.width, area.height);
+		
+		var o = {};
+		o.img = canvas.toDataURL();
+		o.size = {"width": rect.width, "height": rect.height};
+
+		Cu.reportError(canvas.toDataURL());
+		// send image data back to a page
+		top.window.content.postMessage({"action":"showScreenshot", "image":o}, "*");
+}
+
+function sendData (data) {
+	var sendRequest = function(requestData) {
+	  var xhr = new  XMLHttpRequest();
+	  xhr.open("POST", "http://localhost:8080/inspector/");
+	  xhr.send(requestData);
+	};
+
+	var formData = function (data) {
+		var formData = new FormData();
+		formData.append("title", data.title);
+		formData.append("url", data.url);
+		formData.append("color", data.color)
+		formData.append("image", data.img);
+		return formData;
+	};
+	if ( ! isDataUrl( data.img ) ) {
+		getDataUrl(data.img, function (dataUrl) {
+			data.img = dataUrl;
+
+			sendRequest( formData( data ) );
+		});
+	}
+	else {
+		sendRequest( formData( data ) );
+	}
+}
+
+function getDataUrl (url, callback) {
+	var img = createImage();
+	img.onload = img.onerror = function (e) {
+		if ( e.type === "load") {
+			var canvas = createCanvas();
+			canvas.width  = this.width;
+			canvas.height = this.height;
+
+			var ctx = canvas.getContext("2d");
+			ctx.drawImage(this, 0, 0, this.width, this.height);
+			
+			callback(canvas.toDataURL());
+		}
+	};
+	img.src = url;
+}
+
+
+function createCanvas() {
+	var HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
+	var doc = Services.appShell.hiddenDOMWindow.document;
+
+	return doc.createElementNS(HTML_NAMESPACE, "canvas");
+}
+function createImage() {
+	var HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
+	var doc = Services.appShell.hiddenDOMWindow.document;
+
+	return doc.createElementNS(HTML_NAMESPACE, "img");
+}
 
 function loadFile (fileName) {
   var xhr = new  XMLHttpRequest();
   xhr.open("GET", "chrome://devtools/content/inspector/" + fileName, false);
   xhr.send();
   return xhr.responseText;
+}
+
+function isDataUrl(data) {
+	return /^data:image\/([a-z]{3,4})\;base64\,/.test(data);
 }
 
 function injectScript (doc, el) {
