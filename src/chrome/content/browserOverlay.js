@@ -69,6 +69,10 @@ function OnMessage (e) {
 	if (e.data.action == "sendData") {
 		sendData(e.data.data);
 	}
+
+	if (e.data.action == "searchByImage") {
+		searchByImage(e.data.data);
+	}
 }
 
 function cropArea (rect) {
@@ -104,7 +108,7 @@ function cropArea (rect) {
 		o.img = canvas.toDataURL();
 		o.size = {"width": rect.width, "height": rect.height};
 
-		Cu.reportError(canvas.toDataURL());
+		// Cu.reportError(canvas.toDataURL());
 		// send image data back to a page
 		top.window.content.postMessage({"action":"showScreenshot", "image":o}, "*");
 }
@@ -136,6 +140,33 @@ function sendData (data) {
 	}
 }
 
+function searchByImage (data) {
+	var _searchByImage = function (data) {
+		var formData = new FormData();
+		formData.append("image_content", data.img);
+		formData.append("filename", "");
+		formData.append("image_url", "")
+
+	  var xhr = new  XMLHttpRequest();
+	  xhr.open("POST", "http://www.google.com/searchbyimage/upload/");
+	  xhr.onreadystatechange = function () {
+	  	Cu.reportError(xhr.status);
+	  	Cu.reportError(xhr.getAllResponseHeaders());
+	  }
+	  xhr.send(formData);
+	}
+
+	if ( ! isDataUrl( data.img ) ) {
+		getDataUrl(data.img, function (dataUrl) {
+			data.img = dataUrl;
+			_searchByImage( data );
+		});
+	}
+	else {
+		_searchByImage( data );
+	}
+}
+
 function getDataUrl (url, callback) {
 	var img = createImage();
 	img.onload = img.onerror = function (e) {
@@ -160,6 +191,7 @@ function createCanvas() {
 
 	return doc.createElementNS(HTML_NAMESPACE, "canvas");
 }
+
 function createImage() {
 	var HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
 	var doc = Services.appShell.hiddenDOMWindow.document;

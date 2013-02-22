@@ -314,6 +314,29 @@
 
 	}
 
+	window.searchByImage = function () {
+		if ( previewObject ) {
+			window.postMessage({
+				"action": "searchByImage",
+				"data": previewObject
+			}, "*");
+		}
+	}
+
+	// window.searchByImage = function () {
+
+	// 	var form = document.createElement("form");
+	// 	form.setAttribute("method", "POST");
+	// 	form.setAttribute("action", "http://www.google.com/searchbyimage");
+	// 	form.setAttribute('enctype', 'multipart/form-data');
+	// 	form.setAttribute('target', '_blank');
+	// 	document.body.appendChild(form);
+	// 	form.submit();
+	// 	document.body.removeChild(form);
+
+	// }
+	
+
 	window.sendData = function () {
 		if ( previewObject ) {
 			window.postMessage({
