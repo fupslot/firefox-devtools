@@ -129,7 +129,7 @@ function sendData (data) {
 		return formData;
 	};
 	if ( ! isDataUrl( data.img ) ) {
-		getDataUrl(data.img, function (dataUrl) {
+		getDataUrl(data, function (dataUrl) {
 			data.img = dataUrl;
 
 			sendRequest( formData( data ) );
@@ -167,21 +167,33 @@ function searchByImage (data) {
 	}
 }
 
-function getDataUrl (url, callback) {
+function getDataUrl (o, callback) {
 	var img = createImage();
 	img.onload = img.onerror = function (e) {
 		if ( e.type === "load") {
-			var canvas = createCanvas();
-			canvas.width  = this.width;
-			canvas.height = this.height;
+			var c = createCanvas();
 
-			var ctx = canvas.getContext("2d");
-			ctx.drawImage(this, 0, 0, this.width, this.height);
-			
-			callback(canvas.toDataURL());
+			if ( o.sprite ) {
+				c.width  = o.sprite.width;
+				c.height = o.sprite.height;
+			}
+			else {
+				c.width  = o.size.width;
+				c.height = o.size.height;
+			}
+
+			var ctx = c.getContext("2d");
+			if ( ! o.sprite ) {
+				ctx.drawImage(this, 0, 0, this.width, this.height);
+			}
+			else {
+				var s = o.sprite;
+				ctx.drawImage(this, s.x, s.y, s.width, s.height, 0, 0, s.width, s.height);
+			}
+			callback(c.toDataURL());
 		}
 	};
-	img.src = url;
+	img.src = o.img;
 }
 
 

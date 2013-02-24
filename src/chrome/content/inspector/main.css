@@ -1,10 +1,44 @@
+#R2D2C3P0 * {
+	font-family: arial !important;
+	font-size: small !important;
+	font-weight: normal !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	text-align: left !important;
+	cursor: default !important;
+}
+
 #R2D2C3P0 {
 	z-index: 9999;
 	position: fixed;
 	bottom: 0;
 	right: 0;
-	width: 300px;
-	height: 200px;
-	background-color: #ffeeff;
+	width: 400px;
+	height: 250px;
+	background-color: #FFEEFF;
+	border: 3px solid #FFEEFF;
 	overflow: auto;
+}
+
+#R2D2C3P0 > #preview {
+	height: 87%;
+	overflow: auto;
+}
+
+#R2D2C3P0 > #toolbar {
+	height: 13%;
+}
+#R2D2C3P0 #r2d2c3p0-send {
+	width: 40px;
+}
+#R2D2C3P0 #r2d2c3p0-activate {
+	width: 20px;
+}
+
+#R2D2C3P0 #toolbar input[type="checkbox"]  {
+	width: 16px;
+}
+
+#R2D2C3P0 #toolbar input[type="text"]  {
+	width: 100px;
 }
