@@ -408,7 +408,11 @@
 			var docUrl = parseUrl(document.URL);
 
 			// relative path with lead '/'
-			if ( url.indexOf("/") === 0 ) {
+			if ( /^\/{2}/.test(url) ) {
+				var protocol = /http|https|ftp/.exec(url) || ["http"];
+				normalizedUrl = protocol +":"+ url;
+			}
+			else if ( /^\/{1}/.test(url) ) {
 				normalizedUrl = docUrl.fullhostname + url;
 			}
 			else {
