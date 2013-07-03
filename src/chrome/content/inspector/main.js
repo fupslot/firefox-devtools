@@ -144,6 +144,7 @@
 		}));
 		
 		var style = window.getComputedStyle(query._el, null);
+		console.log(style.backgroundPosition);
 		var arrPos = style.backgroundPosition.split(" ");
 		var posX = arrPos[0];
 		var posY = arrPos[1];

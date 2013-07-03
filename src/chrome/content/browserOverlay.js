@@ -115,8 +115,8 @@ function cropArea (rect) {
 
 function sendData (data) {
 	var sendRequest = function(requestData) {
-	  var xhr = new  XMLHttpRequest();
-	  xhr.open("POST", "http://localhost:8080/inspector/");
+	  var xhr = new XMLHttpRequest();
+	  xhr.open("POST", "http://localhost:8080/logo");
 	  xhr.send(requestData);
 	};
 
